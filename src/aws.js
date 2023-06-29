@@ -36,6 +36,12 @@ async function startEc2Instance(label, githubRegistrationToken) {
   const params = {
     ImageId: config.input.ec2ImageId,
     InstanceType: config.input.ec2InstanceType,
+    InstanceMarketOptions: {
+      MarketType: 'spot',
+      SpotOptions: {
+        SpotInstanceType: 'one-time',
+      },
+    },
     MinCount: 1,
     MaxCount: 1,
     UserData: Buffer.from(userData.join('\n')).toString('base64'),
