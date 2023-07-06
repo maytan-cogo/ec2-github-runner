@@ -19,8 +19,8 @@ function buildUserDataScript(githubRegistrationToken, label) {
       '#!/bin/bash',
       'mkdir actions-runner && cd actions-runner',
       'case $(uname -m) in aarch64) ARCH="arm64" ;; amd64|x86_64) ARCH="x64" ;; esac && export RUNNER_ARCH=${ARCH}',
-      'curl -O -L https://github.com/actions/runner/releases/download/v2.299.1/actions-runner-linux-${RUNNER_ARCH}-2.299.1.tar.gz',
-      'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.299.1.tar.gz',
+      'curl -O -L https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-${RUNNER_ARCH}-2.305.0.tar.gz',
+      'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.305.0.tar.gz',
       'export RUNNER_ALLOW_RUNASROOT=1',
       `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
       './run.sh',
@@ -38,12 +38,17 @@ async function startEc2Instance(label, githubRegistrationToken) {
     InstanceType: config.input.ec2InstanceType,
     InstanceMarketOptions: {
       MarketType: 'spot',
-      SpotOptions: {
-        SpotInstanceType: 'one-time',
-      },
     },
     MinCount: 1,
     MaxCount: 1,
+    BlockDeviceMappings: [
+      {
+        DeviceName: '/dev/xvda',
+        Ebs: {
+          VolumeSize: 50,
+        },
+      },
+    ],
     UserData: Buffer.from(userData.join('\n')).toString('base64'),
     SubnetId: config.input.subnetId,
     SecurityGroupIds: [config.input.securityGroupId],
